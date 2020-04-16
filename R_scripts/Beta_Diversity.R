@@ -10,6 +10,7 @@ source("~/R_scripts/Analysis_functions.R")
 
 calculate the beta-diversity in patients that blong to the cluster Psae compare to the cluster with commensals 
 
+# the ps_cluster is created in the Cluster Analysis Script
 ps_cluster <- readRDS("~/data/ps_cluster.rds")
 metadata <- meta(ps_cluster)
 
