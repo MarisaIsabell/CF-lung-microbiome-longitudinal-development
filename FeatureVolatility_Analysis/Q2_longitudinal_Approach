@@ -1,0 +1,16 @@
+
+Feature Volatility Analysis was performed with the longitudinal plugin for Qiime2 (Bokulich, Dillon et al. 2018) 
+on ASV-level and Phylum-level ASV tables together with clinical values and calculated α-diversity as features. 
+A time-index was introduced, to describe the time range of this study monthly as rational numbers and to align all patients accordingly to their age. 
+The time-index was used as the state column and grouping of the longitudinal analysis was based on the affiliation to the "Stable" or "Decliner patients' group. 
+The n_estimators input value was set to 1000, and Random Forest Regression was used as an estimator by default. 
+
+In the “Feature Volatility Analysis,” the program uses the structure of the data as a learning input for a machine learning algorithm.
+The data was analyses patient-specific because we set the “individual_id_column” to the patient names.
+The algorithms identify the features (in our case, the ASV or Phyla) which are the most important ones in the prediction 
+of different states (states = time points). The abundance of the identified important ASV or Phyla is predictive for a specific time.
+This method can help to identify potential relevant ASV and Phyla. 
+
+However, to interpret the global importance of the feature on the entirety, 
+the abundance a global variance or global mean should also be considered.
+
