@@ -1,9 +1,16 @@
 library(phyloseq)
 library(dplyr)
 
+
 Clean_range <- read.csv(file="C:~/Antibiotika_table.csv")
 FEV <- read.csv(file="~/Regression_FEV1.csv")
 
+# Number of Antibiotic Therapy 
+clean_nb <- select(Clean_range, Pseudonym, begin_index, If.any..reason.for.iv.antibiotic.therapy)
+clean_nb <- distinct(clean_nb)
+
+nb_iv_antibiotic <- as.data.frame(table(clean_nb$Pseudonym))
+colnames(nb_iv_antibiotic) <- c("Pseudonym", "number_iv_antibiotic")
 
 # number of exacerbations/elevtive antibiotic usage 
 nbanti_FEV <- left_join(nb_iv_antibiotic, select(FEV, Pseudonym, Slope), by = "Pseudonym")
