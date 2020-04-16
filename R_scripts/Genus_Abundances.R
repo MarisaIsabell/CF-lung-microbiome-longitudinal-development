@@ -30,7 +30,6 @@ fillvector <- c("decreasing"= "orangered",
 plot <- ggplot(metadata, aes(x = FEV1year_group, y = genus, fill = FEV1year_group))
 plot +
   geom_boxplot()+
-  my_theme_ppt()+
   ylab("rel. Abundance Prevotella")+
   scale_x_discrete(limits=c("stable", "decreasing"))+
   scale_y_log10()+
@@ -70,7 +69,6 @@ fillvector <- c("decreasing"= "orangered",
 plot <- ggplot(meta_veill, aes(x = FEV1year_group, y = RSV3038, fill = FEV1year_group))
 plot +
   geom_boxplot()+
-  my_theme_ppt()+
   ylab("rel. Abundance Veillonella")+
   scale_x_discrete(limits=c("stable", "decreasing"))+
   scale_y_log10()+
@@ -111,7 +109,6 @@ fillvector <- c("decreasing"= "orangered",
 plot <- ggplot(metadata, aes(x = FEV1year_group, y = genus, fill = FEV1year_group))
 plot +
   geom_boxplot()+
-  my_theme_ppt()+
   ylab("rel. Abundance Pseudomonas")+
   scale_x_discrete(limits=c("stable", "decreasing"))+
   scale_y_log10()+
