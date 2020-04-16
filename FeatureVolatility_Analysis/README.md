@@ -1,6 +1,6 @@
 This folder contains 
 - the Approach for the Feature Volatility Analysis with Qiime2-longitudinal 
-- the Volatility Plots
+- the Volatility Plots for the Metadata
 - the Feature Volatility Plots with ASV level 
 - the Feature Volatility Plot wuth Phylum level 
 
