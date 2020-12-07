@@ -43,4 +43,26 @@ plot+
                           ", R²= ", round(reg_out_f$R.squared, digits = 2), 
                           ", p= ", round(reg_out_f$P.value, digits =4)), 
             size = 3, color = "gray")
+
+# boxplot between the two patient group
+library(tidyverse)
+boxplot.data <- nbanti_FEV %>% 
+  mutate(patient_group = case_when(Slope  <0 ~ "decliner", 
+                                   Slope  >0 ~ "stable",
+                                   TRUE ~ as.character(NA)
+                                     ))
+
+
+plot <- ggplot(boxplot.data, aes(x = patient_group, y = number_iv_antibiotic, fill = patient_group))
+plot+
+  my_theme_ppt()+
+  geom_boxplot()+
+  geom_jitter(alpha = 0.5, width = 0.1)+
+  xlab("")+
+  ylab("# iv Antibiotic therapy [Quantity]")+
+  theme(legend.position = "none", 
+        axis.text.x = element_text(angle = 0, hjust = 0.5), axis.ticks.x = element_blank())+
+  ggsignif::geom_signif(comparisons = list(c("decliner", "stable")),
+                        test = "wilcox.test", 
+                        map_signif_level= TRUE)
   
