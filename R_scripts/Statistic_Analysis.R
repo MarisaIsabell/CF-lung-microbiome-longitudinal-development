@@ -2,11 +2,12 @@ library(phyloseq)
 library(microbiome)
 library(vegan)
 library(dplyr)
+library(here)
 
 # load data
-ps <- readRDS(file= "~/data/pspaper.rds")
+ps <- readRDS(file=paste0(here(),"/data/pspaper.rds"))
 # load functions 
-source("~/R_scripts/Analysis_functions.R")
+source(paste0(here(),"/R_scripts/Analysis_functions.R"))
 
 
 # PERMANOVA 

@@ -2,8 +2,9 @@ library(plyr)
 library(dplyr)
 library(phyloseq)
 library(microbiome)
+library(here)
 
-ps <- readRDS(file= "~/data/pspaper.rds")
+ps <- readRDS(file=paste0(here(), "/data/pspaper.rds"))
 # load functions 
 source("~/R_scripts/Analysis_functions.R")
 
@@ -12,7 +13,7 @@ source("~/R_scripts/Analysis_functions.R")
 ps_phylum <- tax_glom(ps, taxrank = "Phylum")
 ps_phylum <- microbiome::transform(ps_phylum, "compositional")
 
-phyl <- "Actinobacteria" # change this Phylum accordingly to the Phylum you want to plot
+phyl <- "Proteobacteria" # change this Phylum accordingly to the Phylum you want to plot
 phylum_sub <- subset_taxa(ps_phylum, Phylum == phyl)
 
 otu_ph <- as.data.frame(t(otu_table(phylum_sub)))
@@ -21,6 +22,10 @@ colnames(otu_ph) <- c("Phylum", "sample" )
 
 meta_ph <- meta(phylum_sub)
 meta_ph <- left_join(meta_ph, otu_ph, by=c("Idf..Nummer"="sample"))
+
+# removing samples with chronically infected Pseudomonas
+#meta_ph <- meta_ph %>% 
+#  filter(!clinic_id %in% c("RBB01b0197", "RBB01a0025", "RBB01a0013", "RBB01a0084"))
 
 
 fillvector <- c("decreasing"= "orangered", 

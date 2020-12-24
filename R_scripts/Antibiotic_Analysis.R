@@ -1,10 +1,11 @@
 library(phyloseq)
 library(dplyr)
+library(here)
 
 
-Clean_range <- read.csv(file="C:~/Antibiotika_table.csv")
-FEV <- read.csv(file="~/Regression_FEV1.csv")
-
+Clean_range <- read.csv(file=paste0(here(), "/data/Antibiotika_table.csv"))
+FEV <- read.csv(file=paste0(here(), "/data/Regression_FEV1_year.csv"))
+source(paste0(here(), "/R_scripts/Analysis_Functions.R"))
 # Number of Antibiotic Therapy 
 clean_nb <- select(Clean_range, Pseudonym, begin_index, If.any..reason.for.iv.antibiotic.therapy)
 clean_nb <- distinct(clean_nb)
@@ -13,7 +14,8 @@ nb_iv_antibiotic <- as.data.frame(table(clean_nb$Pseudonym))
 colnames(nb_iv_antibiotic) <- c("Pseudonym", "number_iv_antibiotic")
 
 # number of exacerbations/elevtive antibiotic usage 
-nbanti_FEV <- left_join(nb_iv_antibiotic, select(FEV, Pseudonym, Slope), by = "Pseudonym")
+nbanti_FEV <- left_join(nb_iv_antibiotic, select(FEV, Pseudonym, Slope, Group), by = "Pseudonym")
+
 # calculate regression 
 reg <- calculate_regression(df = nbanti_FEV, y = nbanti_FEV$Slope,
                             x = nbanti_FEV$number_iv_antibiotic)
@@ -25,7 +27,6 @@ reg_out_f <- calculate_regression(df = nbanti_FEV_wooutlier,
 
 plot <- ggplot(nbanti_FEV, aes(x = number_iv_antibiotic, y = Slope, color = Pseudonym))
 plot+
-  my_theme_lines()+
   scale_color_manual(values = colors_clinic_id)+
   geom_smooth(method = "lm", color = "black", size = 1, se=FALSE)+
   geom_abline(slope = reg_out$coefficients[[2]], intercept = reg_out$coefficients[[1]], color = "gray", linetype = "dashed")+
@@ -45,24 +46,16 @@ plot+
             size = 3, color = "gray")
 
 # boxplot between the two patient group
-library(tidyverse)
-boxplot.data <- nbanti_FEV %>% 
-  mutate(patient_group = case_when(Slope  <0 ~ "decliner", 
-                                   Slope  >0 ~ "stable",
-                                   TRUE ~ as.character(NA)
-                                     ))
-
-
-plot <- ggplot(boxplot.data, aes(x = patient_group, y = number_iv_antibiotic, fill = patient_group))
+plot <- ggplot(nbanti_FEV, aes(x = Group, y = number_iv_antibiotic, fill = Group))
 plot+
-  my_theme_ppt()+
   geom_boxplot()+
   geom_jitter(alpha = 0.5, width = 0.1)+
   xlab("")+
   ylab("# iv Antibiotic therapy [Quantity]")+
   theme(legend.position = "none", 
-        axis.text.x = element_text(angle = 0, hjust = 0.5), axis.ticks.x = element_blank())+
+        axis.text.x = element_text(angle = 0, hjust = 0.5), axis.ticks.x = element_blank())
   ggsignif::geom_signif(comparisons = list(c("decliner", "stable")),
-                        test = "wilcox.test", 
+                        test = "t.test", 
                         map_signif_level= TRUE)
+  
   

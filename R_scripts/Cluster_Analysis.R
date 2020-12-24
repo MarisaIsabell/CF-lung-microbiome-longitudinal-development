@@ -3,12 +3,12 @@ library(phyloseq)
 library(microbiome)
 library(dplyr)
 library(cluster)
-
+library(here)
 # load functions 
-source("C:~/R_scripts/Analysis_functions.R")
+source(paste0(here(), "/R_scripts/Analysis_functions.R"))
 
 # load the ps object
-ps <- readRDS(file= "~/data/pspaper.rds")
+ps <- readRDS(file=paste0(here(), "/data/pspaper.rds"))
 
 
 # Hierarchical Clustering ####

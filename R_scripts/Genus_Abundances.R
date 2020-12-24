@@ -1,9 +1,11 @@
 library(phyloseq)
 library(microbiome)
 library(ggplot2)
+library(ggsignif)
 library(dplyr)
+library(here)
 
-ps <- readRDS(file= "~/data/pspaper.rds")
+ps <- readRDS(file=paste0(here(), "/data/pspaper.rds"))
 
 # Prevotella mean ####
 genus <- "Prevotella"
@@ -121,3 +123,9 @@ plot +
               y_position = 3,
               vjust = 0.5)+
   scale_fill_manual(values = fillvector)
+
+## test: how does this change when we remove the Pseudomonas chronic infected patients ? 
+# remove patients: patient 12m 2m 4 and 9 
+
+metadata <- metadata %>% 
+  filter(!clinic_id %in% c("RBB01b0197", "RBB01a0025", "RBB01a0013", "RBB01a0084", "RBB01a0208", "RBB01a0064"))
