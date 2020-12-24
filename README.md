@@ -1,2 +1,2 @@
 # CF-lung-microbiome-longitudinal-development
-Scripts and Data for the Manuscript Longitudinal Development of the Lung Microbiome over Three to Five Years Correlates with a Decrease in Pulmonary Function in Adolescents with Cystic Fibrosis
+Scripts and Data for the Manuscript "Adolescents with Cystic Fibrosis with a Volatile and Dynamic Longitudinal Microbiome show less Reduction in Lung Function"
