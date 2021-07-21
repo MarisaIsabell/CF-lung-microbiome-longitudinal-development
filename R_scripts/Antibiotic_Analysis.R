@@ -1,6 +1,7 @@
 library(phyloseq)
 library(dplyr)
 library(here)
+library(ggplot2)
 
 
 Clean_range <- read.csv(file=paste0(here(), "/data/Antibiotika_table.csv"))
@@ -47,6 +48,8 @@ plot+
             size = 3, color = "gray")
 
     # boxplot between the two patient group
+
+
 plot <- ggplot(nbanti_FEV, aes(x = Group, y = number_iv_antibiotic, fill = Group))
 plot+
   geom_boxplot()+
@@ -59,29 +62,6 @@ plot+
                         test = "t.test", 
                         map_signif_level= TRUE)
 
-#boxplot with number of antibiotics per year
-#calculate the duration for each patient (total number of day on iv antobiotica)
-Clean_range$duration <- Clean_range$end_index -  Clean_range$begin_index
-Duration <- select(Clean_range, Pseudonym, begin_index, end_index, duration) %>%
-  #since the time index are in months, i have to multiply the month with the mean number of days per month (29.53)
-  mutate(duration = duration * 29.53) %>% 
-  distinct()
-# for some start days we have multiple different end days, we need the longest timeperiod, the other row can be discarded
-remove_sec_duration <- function(df){
-  df <- df[order(df$begin_index, -abs(df$duration)),] # sort first
-  df <- df[!duplicated(df$begin_index), ] # keep highest
-  return(df)
-}
-longer <- Duration %>%
-  group_by(Pseudonym) %>%
-  do(., remove_sec_duration(.))
-
-
-# sup up the duration for each patient
-antidays <- aggregate(longer$duration, by = list(Pseudonym = longer$Pseudonym), FUN = sum)
-colnames(antidays) <- c("Pseudonym", "anti.days")
-
-
 # Total number of days for each patient in the study
 
 metadata <- microbiome::meta(ps)
@@ -89,39 +69,34 @@ totaldays <- select(metadata, clinic_id, Eingangsdatum)
 totaldays <- totaldays %>% group_by(clinic_id) %>% mutate(period = (difftime(max(Eingangsdatum), min(Eingangsdatum))))
 period <- select(totaldays, clinic_id, period)
 period$period <- as.integer(period$period)
+period$NbYears <- period$period/365
 
-# merge information 
-percent <- left_join(antidays, period, by = c("Pseudonym"  = "clinic_id")) %>% 
-  select(Pseudonym, period, anti.days) %>% 
-    distinct()
+# boxplot with number of antibiotics per year
+nb_anti_year <- nbanti_FEV %>% 
+  left_join(period, by = c("Pseudonym" = "clinic_id")) %>% 
+  distinct() %>% 
+  mutate(antiPerYear = number_iv_antibiotic/NbYears)
 
-# calculate the percentage
-percent$percentage <- (percent$anti.days/ percent$period)*100
+nb_anti_year$Group <- factor(nb_anti_year$Group, levels = c("stable", "decliner"))
 
-# how many days per year was the patient in the mean on in antibiotics?
-perYear = percent %>%
-  mutate(NbYear = period/365,
-         anti.year = anti.days/NbYear)
-
-
-antiPerYear <- left_join(perYear, select(FEV, Pseudonym, Slope, Group), by = "Pseudonym")# %>% 
-
-antiPerYear$Group <- factor(antiPerYear$Group, levels = c("stable", "decliner"))
-plot <- ggplot(antiPerYear, aes(x = Group, y = anti.year, fill = Group))
+fillvector <- c("decliner"= "#E21214", 
+                "stable"= "#377DB8")
+plot <- ggplot(nb_anti_year, aes(x = Group, y = antiPerYear, fill = Group))
 plot+
   geom_boxplot()+
   theme_classic()+
-  geom_jitter(alpha = 0.5, width = 0.1)+
+  geom_point( size = 1)+
+  scale_fill_manual(values = fillvector)+
   xlab("")+
-  ylab("iv Antibiotic therapy [days/year]")+
-  theme(legend.position = "none",
+  ylab("# iv Antibiotic therapy [Quantity/Year]")+
+  theme(legend.position = "none", 
         axis.text.x = element_text(angle = 0, hjust = 0.5), axis.ticks.x = element_blank())+
   ggsignif::geom_signif(comparisons = list(c("decliner", "stable")),
-                        test = "wilcox.test",
-                        map_signif_level= FALSE)
+                        test = "t.test", 
+                        map_signif_level= TRUE)
 
 
-ggsave("Antibiotic_Boxplot_antibioticdaysPerYear.pdf",
+ggsave("Antibiotic_Boxplot_antibioticPerYear.pdf",
        device = "pdf",
        path = here(),
        scale = 1,
@@ -129,3 +104,61 @@ ggsave("Antibiotic_Boxplot_antibioticdaysPerYear.pdf",
        height =9,
        units = c("cm"),
        dpi = 300)
+# 
+# #boxplot with number of days on antibiotics per year
+# #calculate the duration for each patient (total number of day on iv antobiotica)
+# Clean_range$duration <- Clean_range$end_index -  Clean_range$begin_index
+# Duration <- select(Clean_range, Pseudonym, begin_index, end_index, duration) %>%
+#   #since the time index are in months, i have to multiply the month with the mean number of days per month (29.53)
+#   mutate(duration = duration * 29.53) %>% 
+#   distinct()
+# # for some start days we have multiple different end days, we need the longest timeperiod, the other row can be discarded
+# remove_sec_duration <- function(df){
+#   df <- df[order(df$begin_index, -abs(df$duration)),] # sort first
+#   df <- df[!duplicated(df$begin_index), ] # keep highest
+#   return(df)
+# }
+# longer <- Duration %>%
+#   group_by(Pseudonym) %>%
+#   do(., remove_sec_duration(.))
+# 
+# 
+# # sup up the duration for each patient
+# antidays <- aggregate(longer$duration, by = list(Pseudonym = longer$Pseudonym), FUN = sum)
+# colnames(antidays) <- c("Pseudonym", "anti.days")
+# 
+# 
+# 
+# 
+# # merge information 
+# percent <- left_join(antidays, period, by = c("Pseudonym"  = "clinic_id")) %>% 
+#   select(Pseudonym, period, anti.days) %>% 
+#     distinct()
+# 
+# # calculate the percentage
+# percent$percentage <- (percent$anti.days/ percent$period)*100
+# 
+# # how many days per year was the patient in the mean on in antibiotics?
+# perYear = percent %>%
+#   mutate(NbYear = period/365,
+#          anti.year = anti.days/NbYear)
+# 
+# 
+# antiPerYear <- left_join(perYear, select(FEV, Pseudonym, Slope, Group), by = "Pseudonym")# %>% 
+# 
+# antiPerYear$Group <- factor(antiPerYear$Group, levels = c("stable", "decliner"))
+# plot <- ggplot(antiPerYear, aes(x = Group, y = anti.year, fill = Group))
+# plot+
+#   geom_boxplot()+
+#   theme_classic()+
+#   geom_jitter(alpha = 0.5, width = 0.1)+
+#   xlab("")+
+#   ylab("iv Antibiotic therapy [days/year]")+
+#   theme(legend.position = "none",
+#         axis.text.x = element_text(angle = 0, hjust = 0.5), axis.ticks.x = element_blank())+
+#   ggsignif::geom_signif(comparisons = list(c("decliner", "stable")),
+#                         test = "wilcox.test",
+#                         map_signif_level= FALSE)
+# 
+# 
+
